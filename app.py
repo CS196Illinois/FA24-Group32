@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route('/index')
 def index():
     #Change this later to include html details
-    return render_template('index.html')
+    return render_template('Project/public/index.html')
 
 
 if __name__ == '__main__':
