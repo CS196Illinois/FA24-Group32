@@ -5,11 +5,12 @@ def get_walk_time(origin, destination, api_key):
     url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origin}&destinations={destination}&mode=walking&key={api_key}"
     response = requests.get(url).json()
     if response["status"] == "OK":
-        #print(response)
-        return response["rows"][0]["elements"][0]["duration"]["text"]
+        #print(response) #for debug purposes
+        return response["rows"][0]["elements"][0]["duration"]["value"]
     else:
         return "Error"
 
+#calculate centroid is used for finding a list of restaurants near a group of locations, but I guess we won't be using it for the MVP since we have a fixed list of dining halls.
 def calculate_centroid(locations):
     if not locations:
         raise ValueError("The list of locations is empty.")
@@ -18,6 +19,28 @@ def calculate_centroid(locations):
     longitude = sum(lng for lat, lng in locations) / len(locations)
     
     return (latitude, longitude)
+
+diningHalls = ("Ikenberry Dining Center", "Illinois Street Dining Center", "Lincoln Avenue Dining Hall (LAR Dining Hall)", "Pennsylvania Avenue (PAR) Dining Hall")
+
+#build the locations array based on fixed list of destinations and member's locations
+def build_locations(destinations, memberLocations, api_key):
+    #destinations is the list of destinations, we use diningHalls for the MVP. memberLocations is the list of group member's locations
+    
+    if not destinations:
+        raise ValueError("The list of destinations is empty.")
+    
+    if not memberLocations:
+        raise ValueError("The list of member locations is empty")
+    
+    locations = []
+
+    for destination in destinations:
+        travelTime = []
+        for memberLocation in memberLocations:
+            travelTime.append(get_walk_time(memberLocation, destination, api_key))
+        locations.append({'name': destination, 'travelTimes': travelTime})
+    
+    return locations
 
 #returns the best location/s for the group
 def find_optimal_locations(locations, maximumTravelDistance):
@@ -56,8 +79,7 @@ def find_optimal_locations(locations, maximumTravelDistance):
         for temp in otherLocations)]
 
     return res
-        
-    
 
 if __name__ == "__main__":
-    print(get_walk_time("Illini Union", "Grainger Library", config.api_key))
+    #print(get_walk_time("Ikenberry Dining Center", "Grainger Library", config.api_key))
+    print(find_optimal_locations(build_locations(diningHalls, places, config.api_key), 1000))
