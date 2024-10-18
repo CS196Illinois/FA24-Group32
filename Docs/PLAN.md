@@ -1,1 +1,3 @@
-Plan file. Can also be a PDF or something else. Just make sure to name PLAN with all caps
+Add markers to map \
+Add search bar with autocomplete address \
+Pass address from search bar to backend
