@@ -101,25 +101,9 @@ def find_optimal_locations(memberLocations, destinations, api_key, maximumTravel
 # Add a root route to handle the default path.
 @app.route('/')
 def index():
-    return "Flask server is running!"
+    #Change this later to include html details
+    return render_template('Project/public/index.html')
 
-@app.route('/optimal-location', methods=['POST'])
-def get_optimal_location():
-    data = request.json
-    print("Received data from frontend:", data)
-    memberLocations = data.get('memberLocations')
-    maximumTravelDistance = data.get('maximumTravelDistance', 1000)
 
-    if not memberLocations:
-        return jsonify({'error': 'No member locations provided'}), 400
-
-    locations = build_locations(diningHalls, memberLocations, api_key)
-    print("Generated locations:", locations)
-
-    optimal_locations = find_optimal_locations(locations, maximumTravelDistance)
-    print("Optimal locations found:", optimal_locations)
-
-    return jsonify({'optimalLocations': optimal_locations})
-
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run()
