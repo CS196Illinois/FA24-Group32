@@ -138,7 +138,7 @@ const App = () => {
             </div>
 
             {/* Google Maps */}
-            <LoadScript googleMapsApiKey="AIzaSyCzYiuxC8vqjNQLdNTXU5et4vrfykASqVs">
+            <LoadScript googleMapsApiKey="API-KEY">
                 <GoogleMap mapContainerClassName="map-container" zoom={15} center={center}>
                     {markers.map((marker, index) => (
                         <Marker key={index} position={marker.position} />
