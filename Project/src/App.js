@@ -1,49 +1,3 @@
-// import './App.css';
-// import { useState, useEffect } from "react";
-// import axios from 'axios';
-//
-// const App = () => {
-//   const [locations, setLocations] = useState([]);
-//   const [isLoading, setIsLoading] = useState(true);
-//
-//   useEffect(() => {
-//     // Sample data for member locations, you can later fetch these from user input or other sources.
-//     const memberLocations = ["Grainger Library", "Union", "Oldfather", "Bolt"];
-//     const maximumTravelDistance = 1000; // or let the user set this value
-//
-//     // Call the Flask backend to get optimal locations
-//     axios.post('http://127.0.0.1:5000/optimal-location', {
-//       memberLocations: memberLocations,
-//       maximumTravelDistance: maximumTravelDistance
-//     })
-//         .then(response => {
-//           setLocations(response.data.optimalLocations);
-//           setIsLoading(false);
-//         })
-//         .catch(error => {
-//           console.error('Error fetching optimal locations:', error);
-//           setIsLoading(false);
-//         });
-//   }, []);
-//
-//   return (
-//       <div className="App">
-//         <h1>Optimal Meeting Locations</h1>
-//         {isLoading ? (
-//             <p>Loading...</p>
-//         ) : (
-//             <ul>
-//               {locations.map((location, index) => (
-//                   <li key={index}>{location}</li>
-//               ))}
-//             </ul>
-//         )}
-//       </div>
-//   );
-// }
-//
-// export default App;
-
 import React, { useState, useEffect } from "react";
 import { GoogleMap, Marker, LoadScript } from "@react-google-maps/api";
 import './App.css';
@@ -57,43 +11,25 @@ const App = () => {
     const [markers, setMarkers] = useState([]);
     const [addresses, setAddresses] = useState(''); // Text input for addresses
 
-    // Function to handle the submission of addresses
-    // const handleAddressSubmit = () => {
-    //     const addressArray = addresses.split('\n').map(address => address.trim());
-    //
-    //     // Call backend to save addresses to JSON
-    //     fetch('http://localhost:5000/save-addresses', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify({ addresses: addressArray }),
-    //     }).then(response => response.json())
-    //         .then(data => {
-    //             console.log('Addresses saved:', data);
-    //             geocodeAddresses(addressArray);  // Geocode and place markers
-    //         })
-    //         .catch(error => {
-    //             console.error('Error saving addresses:', error);
-    //         });
-    // };
-    //
-    // // Function to geocode the addresses and set markers
-    // const geocodeAddresses = (addressArray) => {
-    //     const geocoder = new window.google.maps.Geocoder();
-    //     addressArray.forEach((location) => {
-    //         geocoder.geocode({ address: location }, (results, status) => {
-    //             if (status === "OK" && results[0]) {
-    //                 setMarkers((currentMarkers) => [
-    //                     ...currentMarkers,
-    //                     { position: results[0].geometry.location }
-    //                 ]);
-    //             } else {
-    //                 console.error("Geocode was not successful for the following reason:", status);
-    //             }
-    //         });
-    //     });
-    // };
+    //Function to handle the submission of addresses
+    const handleAddressSubmit = () => {
+        const addressArray = addresses.split('\n').map(address => address.trim());
+
+        // Call backend to save addresses to JSON
+        fetch('http://localhost:5000/save-addresses', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ addresses: addressArray }),
+        }).then(response => response.json())
+            .then(data => {
+                console.log('Addresses saved:', data);
+            })
+            .catch(error => {
+                console.error('Error saving addresses:', error);
+            });
+    };
 
     useEffect(() => {
         // Fetch addresses from JSON file
@@ -110,7 +46,6 @@ const App = () => {
                                 ...currentMarkers,
                                 {
                                     position: results[0].geometry.location,
-                                    label: location.label
                                 }
                             ]);
                         } else {
@@ -134,7 +69,7 @@ const App = () => {
                     value={addresses}
                     onChange={(e) => setAddresses(e.target.value)}
                 />
-                {/*<button onClick={handleAddressSubmit}>Save Addresses</button>*/}
+                <button onClick={handleAddressSubmit}>Save Addresses</button>
             </div>
 
             {/* Google Maps */}
