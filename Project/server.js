@@ -34,6 +34,20 @@ app.post('/save-addresses', (req, res) => {
     });
 });
 
+// New endpoint to clear places.json after markers are displayed
+app.post('/clear-places', (req, res) => {
+    const filePath = path.join(__dirname, 'public', 'places.json');
+    fs.writeFile(filePath, JSON.stringify([], null, 2), (err) => {
+        if (err) {
+            console.error('Error clearing places.json:', err);
+            res.status(500).json({ success: false, message: 'Failed to clear places.' });
+        } else {
+            console.log('places.json cleared successfully.');
+            res.json({ success: true, message: 'places.json cleared successfully.' });
+        }
+    });
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
