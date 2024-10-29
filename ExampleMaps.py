@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import googlemaps
 from datetime import datetime
 import config
+import json
 
 MEETUP_SPOTS = [
     {"name": "Ikenberry Dining Center (IKE)", "address": "301 E. Gregory Drive, Champaign"},
@@ -15,6 +16,15 @@ app = Flask(__name__)
 # Initialize Google Maps client
 API_KEY = config.api_key
 gmaps = googlemaps.Client(key=API_KEY)
+
+def get_user_locations():
+    with open('project/public/addresses.json', 'r') as file:
+        return json.load(file)
+
+def send_to_places(output):
+    with open('project/public/places.json', 'w') as file:
+        json.dump(output, file)
+        
 
 def geocode_address(address):
     """
@@ -114,4 +124,4 @@ def best_meetup():
 
 if __name__ == '__main__':
     #app.run(debug=True)
-    print(get_best_meetup_spot(["1401 W. Green Street", "1408 W. Gregory Dr. Urbana, IL", "409 East Chalmers Street Champaign, IL", "901 West Illinois Street, Urbana, IL"]))
+    send_to_places(get_best_meetup_spot(get_user_locations()))
