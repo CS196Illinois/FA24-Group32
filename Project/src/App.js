@@ -42,41 +42,65 @@ const App = () => {
             .then(response => response.json())
             .then(data => {
                 console.log('Addresses saved:', data);
-                fetchPlacesAndAddMarkers();  // Fetch places.json and add markers
+                
+                // Trigger the Python script after saving addresses
+                return fetch('http://localhost:5000/run-example-maps', { method: 'POST' });
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Python script executed:', data);
+                fetchPlacesAndAddMarkers();  // Fetch places.json and add markers if needed
             })
             .catch(error => {
-                console.error('Error saving addresses:', error);
+                console.error('Error saving addresses or running Python script:', error);
             });
     };
+    
 
     // Function to fetch places.json and geocode addresses
-    const fetchPlacesAndAddMarkers = () => {
-        fetch('/places.json')
-            .then((response) => response.json())
-            .then((data) => {
-                const geocoder = new window.google.maps.Geocoder();
+const fetchPlacesAndAddMarkers = () => {
+    fetch('/places.json')
+        .then((response) => response.json())
+        .then((data) => {
+            const geocoder = new window.google.maps.Geocoder();
 
+            if (Array.isArray(data)) {
+                // Handle multiple entries
                 data.forEach((place) => {
                     geocoder.geocode({ address: place.address }, (results, status) => {
                         if (status === "OK" && results[0]) {
                             setMarkers((currentMarkers) => [
                                 ...currentMarkers,
-                                { position: results[0].geometry.location, label: place.label },
+                                { position: results[0].geometry.location, label: place.name },
                             ]);
                         } else {
                             console.error("Geocode was not successful:", status);
                         }
                     });
                 });
+            } else {
+                // Handle single entry
+                geocoder.geocode({ address: data.address }, (results, status) => {
+                    if (status === "OK" && results[0]) {
+                        setMarkers((currentMarkers) => [
+                            ...currentMarkers,
+                            { position: results[0].geometry.location, label: data.name },
+                        ]);
+                    } else {
+                        console.error("Geocode was not successful:", status);
+                    }
+                });
+            }
 
-                // Clear places.json after displaying markers
-                fetch('http://localhost:5000/clear-places', { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => console.log(data.message))
-                    .catch(err => console.error("Error clearing places.json", err));
-            })
-            .catch((err) => console.error("Error loading places.json", err));
-    };
+            // Call /clear-places endpoint after attempting to add all markers
+            fetch('http://localhost:5000/clear-places', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log(data.message))
+                .catch(err => console.error("Error clearing places.json", err));
+        })
+        .catch((err) => console.error("Error loading places.json", err));
+};
+
 
 
     // Callback to be triggered when the map loads to ensure markers are added only after map is ready
@@ -85,7 +109,7 @@ const App = () => {
     };
 
     return (
-        <LoadScript googleMapsApiKey="API-KEY" libraries={["places"]}>
+        <LoadScript googleMapsApiKey="AIzaSyBnDgIgz2FbuGMJXeylzsLf5SjujtSP31o" libraries={["places"]}>
             <div className="app-container">
                 <div className="sidebar">
                     <h2>Enter Address</h2>

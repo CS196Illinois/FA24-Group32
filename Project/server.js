@@ -2,7 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
-const cors = require('cors');  // Import cors
+const cors = require('cors');
+const { exec } = require('child_process');
 
 const app = express();
 const PORT = 5000;
@@ -18,8 +19,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Endpoint to save addresses to JSON
 app.post('/save-addresses', (req, res) => {
-    console.log('Request received:', req.body);
-
     const { addresses } = req.body;
     const filePath = path.join(__dirname, 'public', 'addresses.json');
 
@@ -34,7 +33,24 @@ app.post('/save-addresses', (req, res) => {
     });
 });
 
-// New endpoint to clear places.json after markers are displayed
+// New endpoint to run ExampleMaps.py with full path
+app.post('/run-example-maps', (req, res) => {
+    const pythonScriptPath = path.resolve(__dirname, '../ExampleMaps.py');  // Adjust this path as needed
+
+    exec(`python3 "${pythonScriptPath}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error executing Python script: ${error.message}`);
+            return res.status(500).json({ error: 'Failed to run Python script' });
+        }
+        if (stderr) {
+            console.error(`Python script stderr: ${stderr}`);
+        }
+        console.log(`Python script output: ${stdout}`);
+        res.json({ message: 'Python script executed successfully', output: stdout });
+    });
+});
+
+// Clear places.json after markers are displayed
 app.post('/clear-places', (req, res) => {
     const filePath = path.join(__dirname, 'public', 'places.json');
     fs.writeFile(filePath, JSON.stringify([], null, 2), (err) => {

@@ -14,15 +14,15 @@ MEETUP_SPOTS = [
 app = Flask(__name__)
 
 # Initialize Google Maps client
-API_KEY = config.api_key
-gmaps = googlemaps.Client(key=API_KEY)
+API_KEY = "AIzaSyBnDgIgz2FbuGMJXeylzsLf5SjujtSP31o"
+gmaps = googlemaps.Client(key="AIzaSyBnDgIgz2FbuGMJXeylzsLf5SjujtSP31o")
 
 def get_user_locations():
-    with open('project/public/addresses.json', 'r') as file:
+    with open('public/addresses.json', 'r') as file:
         return json.load(file)
 
 def send_to_places(output):
-    with open('project/public/places.json', 'w') as file:
+    with open('public/places.json', 'w') as file:
         json.dump(output, file)
         
 
