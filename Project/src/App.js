@@ -109,7 +109,7 @@ const fetchPlacesAndAddMarkers = () => {
     };
 
     return (
-        <LoadScript googleMapsApiKey="AIzaSyBnDgIgz2FbuGMJXeylzsLf5SjujtSP31o" libraries={["places"]}>
+        <LoadScript googleMapsApiKey="API-KEY" libraries={["places"]}>
             <div className="app-container">
                 <div className="sidebar">
                     <h2>Enter Address</h2>
