@@ -8,10 +8,7 @@ const { exec } = require('child_process');
 const app = express();
 const PORT = 5000;
 
-// Use body-parser to handle JSON requests
 app.use(bodyParser.json());
-
-// Use cors middleware
 app.use(cors());
 
 // Serve static files from the React app
@@ -33,9 +30,9 @@ app.post('/save-addresses', (req, res) => {
     });
 });
 
-// New endpoint to run ExampleMaps.py with full path
+// New endpoint to run ExampleMaps.py
 app.post('/run-example-maps', (req, res) => {
-    const pythonScriptPath = path.resolve(__dirname, '../ExampleMaps.py');  // Adjust this path as needed
+    const pythonScriptPath = path.resolve(__dirname, '../ExampleMaps.py');  // Adjust path as needed
 
     exec(`python3 "${pythonScriptPath}"`, (error, stdout, stderr) => {
         if (error) {
@@ -61,6 +58,37 @@ app.post('/clear-places', (req, res) => {
             console.log('places.json cleared successfully.');
             res.json({ success: true, message: 'places.json cleared successfully.' });
         }
+    });
+});
+
+// New Sign-Up Endpoint to save user credentials to users.json
+app.post('/signup', (req, res) => {
+    const { username, password } = req.body;
+    const filePath = path.join(__dirname, 'public', 'users.json');
+
+    // Read existing users or create a new array if the file doesn't exist
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        let users = [];
+        if (!err && data) {
+            users = JSON.parse(data);  // Parse existing data if it exists
+        }
+
+        // Check if username already exists
+        if (users.some(user => user.username === username)) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+        // Add the new user to the users array
+        users.push({ username, password });
+
+        // Write the updated users list to users.json
+        fs.writeFile(filePath, JSON.stringify(users, null, 2), (err) => {
+            if (err) {
+                console.error('Error saving user:', err);
+                return res.status(500).json({ message: 'Failed to create user' });
+            }
+            res.json({ message: 'User created successfully' });
+        });
     });
 });
 

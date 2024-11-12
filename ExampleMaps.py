@@ -14,8 +14,8 @@ MEETUP_SPOTS = [
 app = Flask(__name__)
 
 # Initialize Google Maps client
-API_KEY = API-KEY
-gmaps = googlemaps.Client(key=API_KEY)
+API_KEY = "API-KEY"
+gmaps = googlemaps.Client(API_KEY)
 
 def get_user_locations():
     with open('public/addresses.json', 'r') as file:
