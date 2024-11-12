@@ -2,6 +2,7 @@
 import React, { useState, useRef } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import SignUp from './SignUp';
+import Login from './Login';
 import { GoogleMap, Marker, LoadScript, Autocomplete } from "@react-google-maps/api";
 import './App.css';
 
@@ -46,7 +47,7 @@ const MainPage = () => {
                 console.log('Addresses saved:', data);
 
                 // Trigger the Python script after saving addresses
-                return fetch('http://localhost:5000/run-example-maps', { method: 'POST' });
+                return fetch('http://localhost:5000/run-meetup-locations', { method: 'POST' });
             })
             .then(response => response.json())
             .then(data => {
@@ -131,9 +132,15 @@ const MainPage = () => {
                     ))}
                 </ul>
 
-                <Link to="/signup">
-                    <button className="signup-button">Login / Sign Up</button>
-                </Link>
+                <div style={{ display: 'flex' }}>
+                    <Link to="/signup">
+                        <button className="signup-button">Sign Up</button>
+                    </Link>
+
+                    <Link to="/login">
+                        <button className="login-button">Login</button>
+                    </Link>
+                </div>
             </div>
 
             <div className="map-container">
@@ -148,11 +155,12 @@ const MainPage = () => {
 };
 
 const App = () => (
-    <LoadScript googleMapsApiKey="API-KEY" libraries={["places"]}>
+    <LoadScript googleMapsApiKey="api_key" libraries={["places"]}>
         <Router>
             <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/signup" element={<SignUp />} />
+                <Route path="/login" element={<Login />} />
             </Routes>
         </Router>
     </LoadScript>

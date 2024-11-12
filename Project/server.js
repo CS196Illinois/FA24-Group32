@@ -4,6 +4,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { exec } = require('child_process');
+const {clear} = require("@testing-library/user-event/dist/clear");
 
 const app = express();
 const PORT = 5000;
@@ -31,8 +32,8 @@ app.post('/save-addresses', (req, res) => {
 });
 
 // New endpoint to run ExampleMaps.py
-app.post('/run-example-maps', (req, res) => {
-    const pythonScriptPath = path.resolve(__dirname, '../ExampleMaps.py');  // Adjust path as needed
+app.post('/run-meetup-locations', (req, res) => {
+    const pythonScriptPath = path.resolve(__dirname, '../meetup_locations.py');  // Adjust path as needed
 
     exec(`python3 "${pythonScriptPath}"`, (error, stdout, stderr) => {
         if (error) {
@@ -42,10 +43,26 @@ app.post('/run-example-maps', (req, res) => {
         if (stderr) {
             console.error(`Python script stderr: ${stderr}`);
         }
-        console.log(`Python script output: ${stdout}`);
+        console.log(`Python script executed successfully`);
         res.json({ message: 'Python script executed successfully', output: stdout });
     });
 });
+
+app.post('/run-register', (req, res) => {
+    const pythonScriptPath = path.resolve(__dirname, '../register.py');
+
+    exec(`python3 "${pythonScriptPath}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error registering user: ${error.message}`);
+            return res.status(500).json({ error: 'Failed to run Python script' });
+        }
+        if (stderr) {
+            console.error(`Python script stderr: ${stderr}`);
+        }
+        console.log(`Python script executed successfully`);
+        res.json({ message: 'Registered successfully', output: stdout });
+    })
+})
 
 // Clear places.json after markers are displayed
 app.post('/clear-places', (req, res) => {
@@ -61,35 +78,50 @@ app.post('/clear-places', (req, res) => {
     });
 });
 
-// New Sign-Up Endpoint to save user credentials to users.json
+// New Sign-Up Endpoint to pass user credentials to register.json
 app.post('/signup', (req, res) => {
     const { username, password } = req.body;
-    const filePath = path.join(__dirname, 'public', 'users.json');
+    const newUser = [username, password];
+    const registerFilePath = path.join(__dirname, 'public', 'register.json');
+    const userFilePath = path.join(__dirname, 'public', 'users.json');
 
-    // Read existing users or create a new array if the file doesn't exist
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        let users = [];
-        if (!err && data) {
-            users = JSON.parse(data);  // Parse existing data if it exists
+    fs.readFile(userFilePath, 'utf8', (err, usersData) => {
+        if (err && err.code !== 'ENOENT') {
+            return res.status(500).json({ message: 'Error reading users.' });
         }
 
-        // Check if username already exists
-        if (users.some(user => user.username === username)) {
-            return res.status(400).json({ message: 'Username already exists' });
+        let users = {};
+        if (usersData) {
+            users = JSON.parse(usersData);
         }
 
-        // Add the new user to the users array
-        users.push({ username, password });
+        //Check if username exists
+        if (users[username]) {
+            return res.status(409).json({ message: 'Username already exists.' });
+        }
+    })
 
-        // Write the updated users list to users.json
-        fs.writeFile(filePath, JSON.stringify(users, null, 2), (err) => {
+    //Add new user
+    fs.writeFile(registerFilePath, '', (clearErr) => {
+        if (clearErr) {
+            console.error("Error clearing register.json", clearErr);
+            return res.status(500).json({ message: 'Failed to clear register.json.' });
+        }
+        // Write updated data back to the file
+        fs.writeFile(registerFilePath, JSON.stringify(newUser, null, 2), (err) => {
             if (err) {
-                console.error('Error saving user:', err);
-                return res.status(500).json({ message: 'Failed to create user' });
+                return res.status(500).json({ message: 'Error saving register file' });
             }
-            res.json({ message: 'User created successfully' });
+            res.status(201).json({ message: 'User registered successfully' });
         });
-    });
+    })
+});
+
+//New Login Endpoint to pass user credentials to login.json
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    const filePath = path.join(__dirname, 'public', 'login.json');
+
 });
 
 // Start the server

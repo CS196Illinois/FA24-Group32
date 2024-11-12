@@ -12,15 +12,15 @@ MEETUP_SPOTS = [
 ]
 
 # Initialize Google Maps client
-API_KEY = config.api_key
+API_KEY = API-KEY
 gmaps = googlemaps.Client(key=API_KEY)
 
 def get_user_locations():
-    with open('project/public/addresses.json', 'r') as file:
+    with open('../project/public/addresses.json', 'r') as file:
         return json.load(file)
 
 def send_to_places(output):
-    with open('project/public/places.json', 'w') as file:
+    with open('../project/public/places.json', 'w') as file:
         json.dump(output, file)
         
 
