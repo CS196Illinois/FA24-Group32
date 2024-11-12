@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 import googlemaps
 from datetime import datetime
 import config
@@ -11,18 +11,16 @@ MEETUP_SPOTS = [
     {"name": "Pennsylvania Avenue Dining Hall (PAR)", "address": "906 W. College Ct., Urbana"},
 ]
 
-app = Flask(__name__)
-
 # Initialize Google Maps client
-API_KEY = "API-KEY"
-gmaps = googlemaps.Client(API_KEY)
+API_KEY = config.api_key
+gmaps = googlemaps.Client(key=API_KEY)
 
 def get_user_locations():
-    with open('public/addresses.json', 'r') as file:
+    with open('project/public/addresses.json', 'r') as file:
         return json.load(file)
 
 def send_to_places(output):
-    with open('public/places.json', 'w') as file:
+    with open('project/public/places.json', 'w') as file:
         json.dump(output, file)
         
 
@@ -36,9 +34,9 @@ def geocode_address(address):
     location = geocode_result[0]['geometry']['location']
     return f"{location['lat']},{location['lng']}"
 
-def get_best_meetup_spot(user_locations):
+def get_best_meetup_spot(user_locations, mode):
     """
-    Calculate the best meetup spot based on the shortest average distance.
+    Calculate the best meetup spot based on the shortest average distance. Can choose modes of transport
     """
     origin_addresses = []
     for loc in user_locations:
@@ -63,7 +61,7 @@ def get_best_meetup_spot(user_locations):
     distance_matrix = gmaps.distance_matrix(
         origins=origin_addresses,
         destinations=destination_addresses,
-        mode="walking",
+        mode=mode,
         departure_time=datetime.now()
     )
 
@@ -92,36 +90,38 @@ def get_best_meetup_spot(user_locations):
 
     return best_spot
 
-@app.route('/api/best_meetup', methods=['POST'])
-def best_meetup():
-    """
-    Endpoint to get the best meetup spot.
-    Expects JSON payload with a list of user locations.
-    Example:
-    {
-        "user_locations": [
-            "1600 Amphitheatre Parkway, Mountain View, CA",
-            {"lat": 40.712776, "lng": -74.005974},
-            "1 Infinite Loop, Cupertino, CA"
-        ]
-    }
-    """
-    data = request.get_json()
-    if not data or 'user_locations' not in data:
-        return jsonify({"error": "Missing 'user_locations' in request body."}), 400
+#not used for now
+# @meetup_locations_bp.route('/best_meetup', methods=['POST'])
+# def best_meetup():
+#     """
+#     Endpoint to get the best meetup spot.
+#     Expects JSON payload with a list of user locations.
+#     Example:
+#     {
+#         "user_locations": [
+#             "1600 Amphitheatre Parkway, Mountain View, CA",
+#             {"lat": 40.712776, "lng": -74.005974},
+#             "1 Infinite Loop, Cupertino, CA"
+#         ]
+#     }
+#     """
+#     data = request.get_json()
+#     if not data or 'user_locations' not in data:
+#         return jsonify({"error": "Missing 'user_locations' in request body."}), 400
 
-    user_locations = data['user_locations']
-    try:
-        best_spot = get_best_meetup_spot(user_locations)
-        return jsonify({
-            "best_meetup_spot": best_spot['name'],
-            "address": best_spot['address']
-        })
-    except ValueError as ve:
-        return jsonify({"error": str(ve)}), 400
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     user_locations = data['user_locations']
+#     try:
+#         best_spot = get_best_meetup_spot(user_locations)
+#         return jsonify({
+#             "best_meetup_spot": best_spot['name'],
+#             "address": best_spot['address']
+#         })
+#     except ValueError as ve:
+#         return jsonify({"error": str(ve)}), 400
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     #app.run(debug=True)
-    send_to_places(get_best_meetup_spot(get_user_locations()))
+    send_to_places(get_best_meetup_spot(get_user_locations(), "walking"))
+#
