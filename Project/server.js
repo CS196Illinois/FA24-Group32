@@ -31,7 +31,7 @@ app.post('/save-addresses', (req, res) => {
     });
 });
 
-// New endpoint to run ExampleMaps.py
+// New endpoint to run meetup-locations.py
 app.post('/run-meetup-locations', (req, res) => {
     const pythonScriptPath = path.resolve(__dirname, '../meetup_locations.py');  // Adjust path as needed
 
@@ -59,8 +59,24 @@ app.post('/run-register', (req, res) => {
         if (stderr) {
             console.error(`Python script stderr: ${stderr}`);
         }
-        console.log(`Python script executed successfully`);
+        console.log(`Signup script executed successfully`);
         res.json({ message: 'Registered successfully', output: stdout });
+    })
+})
+
+app.post('/run-login', (req, res) => {
+    const pythonScriptPath = path.resolve(__dirname, '../login.py');
+
+    exec(`python3 "${pythonScriptPath}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error logging in user: ${error.message}`);
+            return res.status(500).json({ error: 'Failed to run Python script' })
+        }
+        if (stderr) {
+            console.error(`Python script stderr: ${stderr}`);
+        }
+        console.log('Login script executed successfully');
+        res.json({ message: 'Login successfully', output: stdout });
     })
 })
 
@@ -72,7 +88,7 @@ app.post('/clear-places', (req, res) => {
             console.error('Error clearing places.json:', err);
             res.status(500).json({ success: false, message: 'Failed to clear places.' });
         } else {
-            console.log('places.json cleared successfully.');
+            //console.log('places.json cleared successfully.');
             res.json({ success: true, message: 'places.json cleared successfully.' });
         }
     });
@@ -84,6 +100,7 @@ app.post('/signup', (req, res) => {
     const newUser = [username, password];
     const registerFilePath = path.join(__dirname, 'public', 'register.json');
     const userFilePath = path.join(__dirname, 'public', 'users.json');
+    let duplicate = false
 
     fs.readFile(userFilePath, 'utf8', (err, usersData) => {
         if (err && err.code !== 'ENOENT') {
@@ -95,11 +112,16 @@ app.post('/signup', (req, res) => {
             users = JSON.parse(usersData);
         }
 
-        //Check if username exists
-        if (users[username]) {
-            return res.status(409).json({ message: 'Username already exists.' });
+        for (i = 0; i < users.length; i++) {
+            if (users[i].username === username) {
+                duplicate = true;
+            }
         }
     })
+
+    if (!duplicate) {
+        return res.status(409).json({ message: 'Username already exists.' });
+    }
 
     //Add new user
     fs.writeFile(registerFilePath, '', (clearErr) => {
@@ -112,7 +134,7 @@ app.post('/signup', (req, res) => {
             if (err) {
                 return res.status(500).json({ message: 'Error saving register file' });
             }
-            res.status(201).json({ message: 'User registered successfully' });
+            return res.status(201).json({ message: 'User registered successfully' });
         });
     })
 });
@@ -120,7 +142,26 @@ app.post('/signup', (req, res) => {
 //New Login Endpoint to pass user credentials to login.json
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    const filePath = path.join(__dirname, 'public', 'login.json');
+    const loginFilePath = path.join(__dirname, 'public', 'login.json');
+    const userFilePath = path.join(__dirname, 'public', 'users.json');
+
+    fs.readFile(userFilePath, 'utf8', (err, usersData) => {
+        if (err && err.code !== 'ENOENT') {
+            return res.status(500).json({ message: 'Error reading users' });
+        }
+
+        let users = [];
+        if (usersData) {
+            console.log(usersData);
+            users = JSON.parse(usersData);
+            console.log(users.replace(/"/g, ''));
+        }
+
+        //Check if username exists
+        if (!users[username] || users[password] !== password) {
+            return res.status(409).json({ message: 'Invalid username or password' });
+        }
+    })
 
 });
 

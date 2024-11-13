@@ -58,6 +58,20 @@
   background-color: #f66809;
 }
 
+.back-button {
+  margin-top: auto;
+  margin-left: 100px;
+  padding: 10px;
+  background-color: #3861df;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #224dcd;
+}
+
 .map-container {
   flex: 1;
   display: flex;
