@@ -119,7 +119,7 @@ app.post('/signup', (req, res) => {
         }
     })
 
-    if (!duplicate) {
+    if (duplicate) {
         return res.status(409).json({ message: 'Username already exists.' });
     }
 
@@ -152,9 +152,7 @@ app.post('/login', (req, res) => {
 
         let users = [];
         if (usersData) {
-            console.log(usersData);
             users = JSON.parse(usersData);
-            console.log(users.replace(/"/g, ''));
         }
 
         //Check if username exists
