@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {Link} from "react-router-dom";
 
 function Signup() {
     const [username, setUsername] = useState('');
@@ -67,6 +68,10 @@ function Signup() {
                 </div>
                 <button type="submit">Sign Up</button>
             </form>
+
+            <Link to="/">
+                <button className="back-button">Back</button>
+            </Link>
 
             {/* Display error message if it exists */}
             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
