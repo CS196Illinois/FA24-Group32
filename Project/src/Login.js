@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -23,17 +24,10 @@ const Login = () => {
             });
 
             if (response.ok) {
-                fetch('http://localhost:5000/run-login', { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => console.log(data.message))
-                    .catch(err => console.error('Error logging in user'));
-                //If login is successful
-                setSuccessMessage('Logged in successfully');
-                setUsername('');
-                setPassword('');
+                setSuccessMessage("Logged in successfully.");
+                navigate('/account')
             } else if (response.status === 409) {
-                //Username or password is incorrect
-                setErrorMessage('Invalid username or password.');
+                setErrorMessage("Username or password is incorrect.");
             } else {
                 setErrorMessage('An error occurred. Please try again later.');
             }
@@ -69,12 +63,18 @@ const Login = () => {
                         />
                     </label>
                 </div>
-                <button type="submit">Create Account</button>
+                <button type="submit">Log In</button>
             </form>
 
             <Link to="/">
                 <button className="back-button">Back</button>
             </Link>
+
+            {/* Display error message if it exists */}
+            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+
+            {/* Display success message if registration was successful */}
+            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
         </div>
     );
 };

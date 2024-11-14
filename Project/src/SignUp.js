@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 function Signup() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleSignup = async (e) => {
         e.preventDefault();
@@ -20,23 +21,15 @@ function Signup() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({username, password}),
             });
-
             if (response.ok) {
-                fetch('http://localhost:5000/run-register', { method: 'POST'})
-                    .then(response => response.json())
-                    .then(data => console.log(data.message))
-                    .catch(err => console.error('Error registering user'));
-                // If registration is successful
-                setSuccessMessage('User registered successfully');
-                setUsername('');
-                setPassword('');
+                setSuccessMessage('User registered successfully.');
+                navigate('/account')
             } else if (response.status === 409) {
-                // If username already exists
-                setErrorMessage('Username already exists. Please choose a different one.');
+                setErrorMessage("Username already exists.");
             } else {
-                setErrorMessage('An error occurred. Please try again later.');
+                setErrorMessage("An error occurred.");
             }
         } catch (error) {
             setErrorMessage('An error occurred. Please try again later.');

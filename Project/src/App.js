@@ -3,6 +3,7 @@ import React, { useState, useRef } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import SignUp from './SignUp';
 import Login from './Login';
+import Account from './Account';
 import { GoogleMap, Marker, LoadScript, Autocomplete } from "@react-google-maps/api";
 import './App.css';
 
@@ -161,6 +162,7 @@ const App = () => (
                 <Route path="/" element={<MainPage />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/account" element={<Account />} />
             </Routes>
         </Router>
     </LoadScript>

@@ -9,13 +9,78 @@ const {clear} = require("@testing-library/user-event/dist/clear");
 const app = express();
 const PORT = 5000;
 
+let userMap = new Map()
+class User {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+    }
+}
+
+class Checked {
+    constructor(users, test) {
+        this.users = users;
+        this.test = test;
+    }
+}
+
+// Passed signup (boolean) will tell function if signup or login called it
+// true for signup
+// false for login
+function checkUsers(signup, username, password) {
+    return new Promise((resolve, reject) => {
+        let test = false
+        let users = []
+
+        fs.readFile(path.join(__dirname, 'public', 'users.json'), 'utf8', (err, usersData) => {
+            if (err) {
+                console.error(err);
+                console.log('Error while reading users.json');
+                return reject(new Checked(users, test));
+            } else {
+                if (usersData) {
+                    users = JSON.parse(usersData);
+                }
+
+                // Check if users.json has changed
+                // This code is slightly redundant since as long as /signup and /login work,
+                // the map should always be updated. This is here just in case it isn't for some reason.
+                if (userMap.size !== users.length) {
+                    //Sets new userMap if users.json has changed
+                    userMap = new Map()
+                    for (let user of users) {
+                        userMap.set(user.username, user);
+                    }
+                }
+
+                if (userMap.has(username)) {
+                    if (signup) {
+                        // If signup, set test to true to indicate the username is taken
+                        test = true;
+                        return resolve(new Checked(users, test));
+                    } else if (userMap.get(username).password === password) {
+                        // If login, set test to true if password also matches
+                        test = true;
+                        return resolve(new Checked(users, test));
+                    } else {
+                        // If login but password is incorrect, leave test as false
+                        return resolve(new Checked(users, test));
+                    }
+                }
+                // If username isn't found, leave test as false
+                return resolve(new Checked(users, test));
+            }
+        })
+    })
+}
+
 app.use(bodyParser.json());
 app.use(cors());
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Endpoint to save addresses to JSON
+// Save addresses to addresses.json
 app.post('/save-addresses', (req, res) => {
     const { addresses } = req.body;
     const filePath = path.join(__dirname, 'public', 'addresses.json');
@@ -31,7 +96,7 @@ app.post('/save-addresses', (req, res) => {
     });
 });
 
-// New endpoint to run meetup-locations.py
+// Run meetup-locations.py
 app.post('/run-meetup-locations', (req, res) => {
     const pythonScriptPath = path.resolve(__dirname, '../meetup_locations.py');  // Adjust path as needed
 
@@ -48,38 +113,6 @@ app.post('/run-meetup-locations', (req, res) => {
     });
 });
 
-app.post('/run-register', (req, res) => {
-    const pythonScriptPath = path.resolve(__dirname, '../register.py');
-
-    exec(`python3 "${pythonScriptPath}"`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error registering user: ${error.message}`);
-            return res.status(500).json({ error: 'Failed to run Python script' });
-        }
-        if (stderr) {
-            console.error(`Python script stderr: ${stderr}`);
-        }
-        console.log(`Signup script executed successfully`);
-        res.json({ message: 'Registered successfully', output: stdout });
-    })
-})
-
-app.post('/run-login', (req, res) => {
-    const pythonScriptPath = path.resolve(__dirname, '../login.py');
-
-    exec(`python3 "${pythonScriptPath}"`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error logging in user: ${error.message}`);
-            return res.status(500).json({ error: 'Failed to run Python script' })
-        }
-        if (stderr) {
-            console.error(`Python script stderr: ${stderr}`);
-        }
-        console.log('Login script executed successfully');
-        res.json({ message: 'Login successfully', output: stdout });
-    })
-})
-
 // Clear places.json after markers are displayed
 app.post('/clear-places', (req, res) => {
     const filePath = path.join(__dirname, 'public', 'places.json');
@@ -94,73 +127,44 @@ app.post('/clear-places', (req, res) => {
     });
 });
 
-// New Sign-Up Endpoint to pass user credentials to register.json
+// Sign-up endpoint to create new user
 app.post('/signup', (req, res) => {
     const { username, password } = req.body;
-    const newUser = [username, password];
-    const registerFilePath = path.join(__dirname, 'public', 'register.json');
-    const userFilePath = path.join(__dirname, 'public', 'users.json');
-    let duplicate = false
+    const newUser = new User(username, password);
 
-    fs.readFile(userFilePath, 'utf8', (err, usersData) => {
-        if (err && err.code !== 'ENOENT') {
-            return res.status(500).json({ message: 'Error reading users.' });
+    checkUsers(true, username).then((check) => {
+        if (check.test) {
+            return res.status(409).json({ message: 'Username taken.' });
         }
 
-        let users = {};
-        if (usersData) {
-            users = JSON.parse(usersData);
+        //Update userMap to reflect new user
+        userMap = new Map()
+        for (let user of check.users) {
+            userMap.set(user.username, user);
         }
+        userMap.set(username, newUser);
 
-        for (i = 0; i < users.length; i++) {
-            if (users[i].username === username) {
-                duplicate = true;
-            }
-        }
-    })
-
-    if (duplicate) {
-        return res.status(409).json({ message: 'Username already exists.' });
-    }
-
-    //Add new user
-    fs.writeFile(registerFilePath, '', (clearErr) => {
-        if (clearErr) {
-            console.error("Error clearing register.json", clearErr);
-            return res.status(500).json({ message: 'Failed to clear register.json.' });
-        }
-        // Write updated data back to the file
-        fs.writeFile(registerFilePath, JSON.stringify(newUser, null, 2), (err) => {
+        //Add new user to users.json
+        fs.writeFile(path.join(__dirname, 'public', 'users.json'), JSON.stringify(Array.from(userMap.values()), null, 2), (err) => {
             if (err) {
-                return res.status(500).json({ message: 'Error saving register file' });
+                return res.status(500).json({ message: "Error saving users.json. "})
             }
-            return res.status(201).json({ message: 'User registered successfully' });
-        });
-    })
+            return res.status(201).json({ message: 'User registered successfully.' });
+        })
+    }). catch(err => console.log(err));
+
 });
 
-//New Login Endpoint to pass user credentials to login.json
+//Login endpoint
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    const loginFilePath = path.join(__dirname, 'public', 'login.json');
-    const userFilePath = path.join(__dirname, 'public', 'users.json');
 
-    fs.readFile(userFilePath, 'utf8', (err, usersData) => {
-        if (err && err.code !== 'ENOENT') {
-            return res.status(500).json({ message: 'Error reading users' });
+    checkUsers(false, username, password).then((check) => {
+        if (!check.test) {
+            return res.status(409).json({ message: 'Username or password is incorrect.' });
         }
-
-        let users = [];
-        if (usersData) {
-            users = JSON.parse(usersData);
-        }
-
-        //Check if username exists
-        if (!users[username] || users[password] !== password) {
-            return res.status(409).json({ message: 'Invalid username or password' });
-        }
+        return res.status(201).json({ message: 'Logged in successfully.' });
     })
-
 });
 
 // Start the server
