@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {Link, useNavigate} from "react-router-dom";
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
 
         setErrorMessage('');
-        setSuccessMessage('');
 
         try {
             const response = await fetch('http://localhost:5000/login', {
@@ -23,13 +21,13 @@ const Login = () => {
                 body: JSON.stringify({ username, password }),
             });
 
+            const data = await response.json();
+
             if (response.ok) {
-                setSuccessMessage("Logged in successfully.");
+                localStorage.setItem('token', data.token);
                 navigate('/account')
-            } else if (response.status === 409) {
-                setErrorMessage("Username or password is incorrect.");
             } else {
-                setErrorMessage('An error occurred. Please try again later.');
+                setErrorMessage(data.message || 'Login failed. Please try again.');
             }
         } catch (error) {
             setErrorMessage('An error occurred. Please try again later.');
@@ -72,9 +70,6 @@ const Login = () => {
 
             {/* Display error message if it exists */}
             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-
-            {/* Display success message if registration was successful */}
-            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
         </div>
     );
 };

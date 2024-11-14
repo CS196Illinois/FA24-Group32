@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useRef } from "react";
+import React, {useState, useRef, useEffect} from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import SignUp from './SignUp';
 import Login from './Login';
@@ -17,6 +17,31 @@ const MainPage = () => {
     const [addresses, setAddresses] = useState([]);
     const autocompleteRef = useRef(null);
     const inputRef = useRef(null);
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        fetchProtectedData(token)
+    }, [])
+
+    const fetchProtectedData = (token) => {
+        fetch('http://localhost:5000/get-account', {
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + token },
+        })
+            .then((res) => {
+                if (res.status === 401 || res.status === 403 || res.status === 404) {
+                    setLoggedIn(false)
+                } else {
+                    setLoggedIn(true);
+                }
+                return res.json()
+            })
+            .then((data) => {
+                setUsername(data.username);
+            })
+    }
 
     const handlePlaceSelect = () => {
         const place = autocompleteRef.current.getPlace();
@@ -133,15 +158,26 @@ const MainPage = () => {
                     ))}
                 </ul>
 
-                <div style={{ display: 'flex' }}>
-                    <Link to="/signup">
-                        <button className="signup-button">Sign Up</button>
-                    </Link>
+                {!loggedIn && (
+                    <div style={{display: 'flex'}}>
+                        <Link to="/signup">
+                            <button className="signup-button">Sign Up</button>
+                        </Link>
 
-                    <Link to="/login">
-                        <button className="login-button">Login</button>
-                    </Link>
-                </div>
+                        <Link to="/login">
+                            <button className="login-button">Login</button>
+                        </Link>
+                    </div>
+                )}
+
+                {loggedIn && (
+                    <div>
+                        <Link to={"/account"}>
+                            <button className="account-button">My Account</button>
+                        </Link>
+                        <h1>{username}</h1>
+                    </div>
+                )}
             </div>
 
             <div className="map-container">
@@ -156,7 +192,7 @@ const MainPage = () => {
 };
 
 const App = () => (
-    <LoadScript googleMapsApiKey="api-key" libraries={["places"]}>
+    <LoadScript googleMapsApiKey="api_key" libraries={["places"]}>
         <Router>
             <Routes>
                 <Route path="/" element={<MainPage />} />

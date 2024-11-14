@@ -9,14 +9,41 @@ const {clear} = require("@testing-library/user-event/dist/clear");
 const app = express();
 const PORT = 5000;
 
+app.use(bodyParser.json());
+app.use(cors());
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'public')));
+
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = 'your_secret_key'; // Use a strong secret in production
+
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided.' })
+    }
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid or expired token. '})
+        }
+        req.user = user;
+        next();
+    })
+}
+
 let userMap = new Map()
+
+// User object
 class User {
-    constructor(username, password) {
+    constructor(username, password, address) {
         this.username = username;
         this.password = password;
+        this.address = address;
     }
 }
 
+// Checked object is returned by checkUsers
 class Checked {
     constructor(users, test) {
         this.users = users;
@@ -43,7 +70,7 @@ function checkUsers(signup, username, password) {
                 }
 
                 // Check if users.json has changed
-                // This code is slightly redundant since as long as /signup and /login work,
+                // This code is slightly redundant since as long as other code works,
                 // the map should always be updated. This is here just in case it isn't for some reason.
                 if (userMap.size !== users.length) {
                     //Sets new userMap if users.json has changed
@@ -73,12 +100,6 @@ function checkUsers(signup, username, password) {
         })
     })
 }
-
-app.use(bodyParser.json());
-app.use(cors());
-
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Save addresses to addresses.json
 app.post('/save-addresses', (req, res) => {
@@ -121,16 +142,16 @@ app.post('/clear-places', (req, res) => {
             console.error('Error clearing places.json:', err);
             res.status(500).json({ success: false, message: 'Failed to clear places.' });
         } else {
-            //console.log('places.json cleared successfully.');
             res.json({ success: true, message: 'places.json cleared successfully.' });
         }
     });
 });
 
 // Sign-up endpoint to create new user
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
     const { username, password } = req.body;
-    const newUser = new User(username, password);
+
+    const newUser = new User(username, password, "");
 
     checkUsers(true, username).then((check) => {
         if (check.test) {
@@ -138,18 +159,15 @@ app.post('/signup', (req, res) => {
         }
 
         //Update userMap to reflect new user
-        userMap = new Map()
-        for (let user of check.users) {
-            userMap.set(user.username, user);
-        }
         userMap.set(username, newUser);
 
         //Add new user to users.json
         fs.writeFile(path.join(__dirname, 'public', 'users.json'), JSON.stringify(Array.from(userMap.values()), null, 2), (err) => {
             if (err) {
-                return res.status(500).json({ message: "Error saving users.json. "})
+                return res.status(500)
             }
-            return res.status(201).json({ message: 'User registered successfully.' });
+            const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' })
+            return res.status(201).json({ message: 'User registered successfully.', token });
         })
     }). catch(err => console.log(err));
 
@@ -163,8 +181,23 @@ app.post('/login', (req, res) => {
         if (!check.test) {
             return res.status(409).json({ message: 'Username or password is incorrect.' });
         }
-        return res.status(201).json({ message: 'Logged in successfully.' });
+        const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' })
+        return res.status(200).json({ message: 'Logged in successfully.', token });
     })
+});
+
+app.get('/get-account', authenticateToken, (req, res) => {
+    const { username } = req.user;
+    const user = userMap.get(username);
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+        username: user.username,
+        address: user.address,
+    });
 });
 
 // Start the server

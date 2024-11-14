@@ -72,6 +72,20 @@
   background-color: #224dcd;
 }
 
+.account-button {
+  margin-top: auto;
+  margin-left: 38%;
+  padding: 10px;
+  background-color: #9b9b9b;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.account-button:hover {
+  background-color: #818181;
+}
+
 .map-container {
   flex: 1;
   display: flex;

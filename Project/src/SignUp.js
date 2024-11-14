@@ -5,15 +5,12 @@ function Signup() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
     const navigate = useNavigate();
 
     const handleSignup = async (e) => {
         e.preventDefault();
 
-        // Clear any previous messages
         setErrorMessage('');
-        setSuccessMessage('');
 
         try {
             const response = await fetch('http://localhost:5000/signup', {
@@ -23,13 +20,14 @@ function Signup() {
                 },
                 body: JSON.stringify({username, password}),
             });
+
+            const data = await response.json();
+
             if (response.ok) {
-                setSuccessMessage('User registered successfully.');
+                localStorage.setItem('token', data.token);
                 navigate('/account')
-            } else if (response.status === 409) {
-                setErrorMessage("Username already exists.");
             } else {
-                setErrorMessage("An error occurred.");
+                setErrorMessage(data.message || 'Sign up failed. Please try again.');
             }
         } catch (error) {
             setErrorMessage('An error occurred. Please try again later.');
@@ -68,9 +66,6 @@ function Signup() {
 
             {/* Display error message if it exists */}
             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-
-            {/* Display success message if registration was successful */}
-            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
         </div>
     );
 }
