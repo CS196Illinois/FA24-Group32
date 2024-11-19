@@ -192,7 +192,7 @@ const MainPage = () => {
 };
 
 const App = () => (
-    <LoadScript googleMapsApiKey="AIzaSyBnDgIgz2FbuGMJXeylzsLf5SjujtSP31o" libraries={["places"]}>
+    <LoadScript googleMapsApiKey="api_key" libraries={["places"]}>
         <Router>
             <Routes>
                 <Route path="/" element={<MainPage />} />
