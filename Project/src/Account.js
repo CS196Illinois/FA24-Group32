@@ -1,14 +1,24 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Link, useNavigate} from "react-router-dom";
+import {Autocomplete} from "@react-google-maps/api";
 
 function Account() {
+    const navigate = useNavigate();
+
     const [username, setUsername] = useState("");
+
     const [password, setPassword] = useState("");
     const [checkPassword, setCheckPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
+
     const [address, setAddress] = useState("");
-    const navigate = useNavigate();
+    const autocompleteRef = useRef(null);
+    const inputRef = useRef(null);
+
     const [changingPassword, setChangingPassword] = useState(false);
+    const [changingAddress, setChangingAddress] = useState(false);
+
+    const [errorMessage, setErrorMessage] = useState('')
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -42,14 +52,89 @@ function Account() {
 
     const handlePassword = async (e) => {
         e.preventDefault();
+        if (changingAddress) {
+            setChangingAddress(false);
+        }
         setChangingPassword(!changingPassword);
     }
 
     const submitPassword = async (e) => {
         e.preventDefault();
 
-        console.log("submit");
+        if (newPassword === checkPassword) {
+            try {
+                const response = await fetch('http://localhost:5000/set-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password, newPassword })
+                })
+
+                if (response.ok) {
+                    setChangingPassword(false);
+                    alert("Password changed successfully.")
+                } else if (response.status === 401) {
+                    setErrorMessage("Incorrect password. Please try again.")
+                }
+            } catch (error) {
+                setErrorMessage('An error occurred. Please try again later.')
+                console.error('Error:', error);
+            }
+
+        } else {
+            setErrorMessage("Passwords don't match.");
+        }
     }
+
+    const handleLogOut = async (e) => {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        navigate('/');
+    }
+
+    const handleAddress = async (e) => {
+        e.preventDefault();
+        if (changingPassword) {
+            setChangingPassword(false);
+        }
+        setChangingAddress(!changingAddress);
+    }
+
+    const submitAddress = async (newAddress) => {
+        try {
+            const response = await fetch('http://localhost:5000/set-address', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, address: newAddress })
+            })
+
+            if (response.ok) {
+                setChangingAddress(false);
+                console.log("changed")
+                alert("Address changed successfully.")
+            }
+        } catch (error) {
+            setErrorMessage('An error occurred. Please try again later.')
+            console.error('Error:', error);
+        }
+    }
+
+    const handlePlaceSelect = async () => {
+        const place = autocompleteRef.current.getPlace();
+        if (place && place.geometry) {
+            const newAddress = (place.formatted_address)
+            setAddress(newAddress);
+            console.log(address)
+            try {
+                await submitAddress(newAddress);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    };
 
     return (
         <div>
@@ -58,14 +143,14 @@ function Account() {
                 <h2>Home Address: {address}</h2>
             </div>
             {changingPassword && (
-                <div id={"changePassword"}>
+                <div>
                     <form onSubmit={submitPassword}>
                         <div>
                             <label>
                                 Old Password:
                                 <input
-                                    type="text"
-                                    value={password}
+                                    type="password"
+                                    placeholder={"Old Password"}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
@@ -76,7 +161,7 @@ function Account() {
                                 New Password:
                                 <input
                                     type="password"
-                                    value={newPassword}
+                                    placeholder={"New Password"}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     required
                                 />
@@ -87,7 +172,7 @@ function Account() {
                                 Confirm New Password:
                                 <input
                                     type="password"
-                                    value={checkPassword}
+                                    placeholder={"Confirm Password"}
                                     onChange={(e) => setCheckPassword(e.target.value)}
                                     required
                                 />
@@ -97,16 +182,48 @@ function Account() {
                     </form>
                 </div>
             )}
+
+            {changingAddress && (
+                <div>
+                    <div>
+                        <label>
+                            New Address:
+                            <Autocomplete
+                                onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+                                onPlaceChanged={handlePlaceSelect}
+                            >
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                        placeholder="Start typing an address..."
+                                    style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+                                />
+                            </Autocomplete>
+                        </label>
+                    </div>
+                </div>
+            )}
             <div style={{display: "flex"}}>
                 <Link to="/">
                     <button className="back-button">Back</button>
                 </Link>
 
-                <button className="account-button" onClick={handlePassword} id={"passwordButton"}>
+                <button onClick={handlePassword}>
                     {changingPassword ? "Cancel" : "Change Password"}
                 </button>
 
+                <button onClick={handleLogOut}>
+                    Log Out
+                </button>
+
+                <button onClick={handleAddress}>
+                    {changingAddress ? "Cancel" : "Change Address"}
+                </button>
             </div>
+
+            {/* Display error message if it exists */}
+            {errorMessage && <p style={{color: 'red'}}>{errorMessage}</p>}
+
         </div>
 
     );

@@ -43,7 +43,7 @@ function Signup() {
                     <label>Username:</label>
                     <input
                         type="text"
-                        value={username}
+                        placeholder={"Username"}
                         onChange={(e) => setUsername(e.target.value)}
                         required
                     />
@@ -52,7 +52,7 @@ function Signup() {
                     <label>Password:</label>
                     <input
                         type="password"
-                        value={password}
+                        placeholder={"Password"}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
