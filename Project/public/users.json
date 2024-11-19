@@ -1,7 +1,17 @@
 [
   {
     "username": "test",
+    "password": "1234",
+    "address": "Campus Recreation Center East, 1102 W Gregory Dr, Urbana, IL 61801, USA"
+  },
+  {
+    "username": "test1",
     "password": "test",
-    "address": ""
+    "address": "test"
+  },
+  {
+    "username": "test2",
+    "password": "test",
+    "address": "test"
   }
 ]

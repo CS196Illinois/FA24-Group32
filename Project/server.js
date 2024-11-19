@@ -101,6 +101,18 @@ function checkUsers(signup, username, password) {
     })
 }
 
+function updateUsers(userMap) {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(path.join(__dirname, 'public', 'users.json'), JSON.stringify(Array.from(userMap.values()), null, 2), (err) => {
+            if (!err) {
+                return resolve;
+            } else {
+                return reject
+            }
+        })
+    })
+}
+
 // Save addresses to addresses.json
 app.post('/save-addresses', (req, res) => {
     const { addresses } = req.body;
@@ -199,6 +211,36 @@ app.get('/get-account', authenticateToken, (req, res) => {
         address: user.address,
     });
 });
+
+app.post('/set-password', async (req, res) => {
+    const {username, password, newPassword} = req.body;
+    const user = userMap.get(username);
+
+    if (user.password === password) {
+        user.password = newPassword;
+        userMap.set(username, user);
+        if (await updateUsers(userMap)) {
+            return res.status(201).json({message: 'User updated successfully.'});
+        } else {
+            return res.status(500)
+        }
+    } else {
+        return res.status(401).json({message: 'Password is incorrect.'});
+    }
+})
+
+app.post('/set-address', async (req, res) => {
+    const {username, address} = req.body;
+    const user = userMap.get(username);
+
+    user.address = address;
+    userMap.set(username, user);
+    if (await updateUsers(userMap)) {
+        return res.status(201).json({message: 'User updated successfully.'});
+    } else {
+        return res.status(500)
+    }
+})
 
 // Start the server
 app.listen(PORT, () => {
