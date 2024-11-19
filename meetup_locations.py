@@ -12,7 +12,7 @@ MEETUP_SPOTS = [
 ]
 
 # Initialize Google Maps client
-API_KEY = "AIzaSyBnDgIgz2FbuGMJXeylzsLf5SjujtSP31o"
+API_KEY = "api_key"
 gmaps = googlemaps.Client(key=API_KEY)
 
 def get_user_locations():
