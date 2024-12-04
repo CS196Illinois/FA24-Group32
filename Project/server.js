@@ -36,10 +36,14 @@ let userMap = new Map()
 
 // User object
 class User {
-    constructor(username, password, address) {
+    constructor(username, password, address, friends, outRequests, inRequests, approvedRequests) {
         this.username = username;
         this.password = password;
         this.address = address;
+        // this.friends = friends;
+        // this.outRequests = outRequests;
+        // this.inRequests = inRequests;
+        // this.approvedRequests = approvedRequests;
     }
 }
 
@@ -163,7 +167,7 @@ app.post('/clear-places', (req, res) => {
 app.post('/signup', async (req, res) => {
     const { username, password } = req.body;
 
-    const newUser = new User(username, password, "");
+    const newUser = new User(username, password, "", [], [], [], []);
 
     checkUsers(true, username).then((check) => {
         if (check.test) {
@@ -241,6 +245,15 @@ app.post('/set-address', async (req, res) => {
         return res.status(500)
     }
 })
+
+// app.post('/add-friend', (req, res) => {
+//
+// });
+//
+// app.post('/remove-friend', (req, res) => {
+//
+// });
+
 
 // Start the server
 app.listen(PORT, () => {

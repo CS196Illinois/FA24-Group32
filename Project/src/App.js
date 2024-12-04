@@ -1,11 +1,12 @@
-// src/App.js
-import React, {useState, useRef, useEffect} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
-import SignUp from './SignUp';
-import Login from './Login';
-import Account from './Account';
+import { Navbar, Nav, Button, Container } from "react-bootstrap";
+import SignUp from "./SignUp";
+import Login from "./Login";
+import Account from "./Account";
 import { GoogleMap, Marker, LoadScript, Autocomplete } from "@react-google-maps/api";
-import './App.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import './App.css'
 
 const center = {
     lat: 40.110588,  // UIUC latitude
@@ -133,72 +134,125 @@ const MainPage = () => {
         fetchPlacesAndAddMarkers();
     };
 
+//     return (
+//         <div className="app-container">
+//             <div className="sidebar">
+//                 <h2>Enter Address</h2>
+//
+//                 <Autocomplete
+//                     onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+//                     onPlaceChanged={handlePlaceSelect}
+//                 >
+//                     <input
+//                         ref={inputRef}
+//                         type="text"
+//                         placeholder="Start typing an address..."
+//                         style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+//                     />
+//                 </Autocomplete>
+//
+//                 <button onClick={handleAddressSubmit}>Save Addresses</button>
+//
+//                 <ul>
+//                     {addresses.map((address, index) => (
+//                         <li key={index}>{address}</li>
+//                     ))}
+//                 </ul>
+//             </div>
+//
+//             <div className="map-container">
+//                 <GoogleMap mapContainerClassName="map" zoom={15} center={center} onLoad={handleMapLoad}>
+//                     {markers.map((marker, index) => (
+//                         <Marker key={index} position={marker.position} label={marker.label} />
+//                     ))}
+//                 </GoogleMap>
+//             </div>
+//         </div>
+//     );
+// };
+
     return (
-        <div className="app-container">
-            <div className="sidebar">
-                <h2>Enter Address</h2>
+        <>
+            <Navbar bg="light" expand="lg">
+                <Container fluid>
+                    <Navbar.Brand href="/" className="brand-style">
+                        SpotFinder
+                    </Navbar.Brand>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                    <Navbar.Collapse id="basic-navbar-nav">
+                        <Nav className="ms-auto d-flex align-items-center">
+                            {!loggedIn ? (
+                                <>
+                                    <Link to="/signup">
+                                        <Button variant="outline-primary" className="me-2">
+                                            Sign Up
+                                        </Button>
+                                    </Link>
+                                    <Link to="/login">
+                                        <Button variant="outline-secondary">Login</Button>
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="navbar-text me-2">Welcome, {username}</span>
+                                    <Link to="/account">
+                                        <Button variant="outline-info">Account</Button>
+                                    </Link>
+                                </>
+                            )}
+                        </Nav>
+                    </Navbar.Collapse>
+                </Container>
+            </Navbar>
 
-                <Autocomplete
-                    onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-                    onPlaceChanged={handlePlaceSelect}
-                >
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        placeholder="Start typing an address..."
-                        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-                    />
-                </Autocomplete>
+            <div className="app-container">
+                <div className="sidebar">
+                    <h4>Enter Address</h4>
 
-                <button onClick={handleAddressSubmit}>Save Addresses</button>
+                    <Autocomplete
+                        onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+                        onPlaceChanged={handlePlaceSelect}
+                    >
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            placeholder="Start typing an address..."
+                            style={{width: "100%", padding: "10px", marginBottom: "10px"}}
+                        />
+                    </Autocomplete>
 
-                <ul>
-                    {addresses.map((address, index) => (
-                        <li key={index}>{address}</li>
-                    ))}
-                </ul>
+                    <Button variant="primary" onClick={handleAddressSubmit} className="w-100 mb-3">
+                        Save Addresses
+                    </Button>
 
-                {!loggedIn && (
-                    <div style={{display: 'flex'}}>
-                        <Link to="/signup">
-                            <button className="signup-button">Sign Up</button>
-                        </Link>
+                    <ul>
+                        {addresses.map((address, index) => (
+                            <li key={index}>{address}</li>
+                        ))}
+                    </ul>
+                </div>
 
-                        <Link to="/login">
-                            <button className="login-button">Login</button>
-                        </Link>
-                    </div>
-                )}
-
-                {loggedIn && (
-                    <div>
-                        <Link to={"/account"}>
-                            <button className="account-button">My Account</button>
-                        </Link>
-                        <h1>{username}</h1>
-                    </div>
-                )}
+                <div className={"map-container"}>
+                    <GoogleMap mapContainerClassName="map" mapContainerStyle={{ width: "100%", height: "100%"}} zoom={15} center={center} onLoad={handleMapLoad}>
+                        {markers.map((marker, index) => (
+                            <Marker key={index} position={marker.position} label={marker.label}/>
+                        ))}
+                    </GoogleMap>
+                </div>
             </div>
-
-            <div className="map-container">
-                <GoogleMap mapContainerClassName="map" zoom={15} center={center} onLoad={handleMapLoad}>
-                    {markers.map((marker, index) => (
-                        <Marker key={index} position={marker.position} label={marker.label} />
-                    ))}
-                </GoogleMap>
-            </div>
-        </div>
+        </>
     );
-};
+}
+;
 
 const App = () => (
     <LoadScript googleMapsApiKey="api_key" libraries={["places"]}>
         <Router>
             <Routes>
-                <Route path="/" element={<MainPage />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/account" element={<Account />} />
+                <Route path="/" element={<MainPage/>}/>
+                <Route path="/signup" element={<SignUp/>}/>
+                <Route path="/login" element={<Login/>}/>
+                <Route path="/account" element={<Account/>}/>
             </Routes>
         </Router>
     </LoadScript>

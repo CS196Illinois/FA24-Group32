@@ -17,6 +17,7 @@ function Account() {
 
     const [changingPassword, setChangingPassword] = useState(false);
     const [changingAddress, setChangingAddress] = useState(false);
+    // const [changingFriend, setChangingFriend] = useState(false);
 
     const [errorMessage, setErrorMessage] = useState('')
 
@@ -52,9 +53,8 @@ function Account() {
 
     const handlePassword = async (e) => {
         e.preventDefault();
-        if (changingAddress) {
-            setChangingAddress(false);
-        }
+        //setChangingFriend(false);
+        setChangingAddress(false);
         setChangingPassword(!changingPassword);
     }
 
@@ -95,9 +95,8 @@ function Account() {
 
     const handleAddress = async (e) => {
         e.preventDefault();
-        if (changingPassword) {
-            setChangingPassword(false);
-        }
+        setChangingPassword(false);
+        //setChangingFriend(false);
         setChangingAddress(!changingAddress);
     }
 
@@ -136,6 +135,13 @@ function Account() {
         }
     };
 
+    // const handleFriend = async (e) => {
+    //     e.preventDefault();
+    //     setChangingPassword(false);
+    //     setChangingAddress(false);
+    //     setChangingFriend(!changingFriend);
+    // }
+
     return (
         <div>
             <div >
@@ -147,8 +153,7 @@ function Account() {
                     <form onSubmit={submitPassword}>
                         <div>
                             <label>
-                                Old Password:
-                                <input
+                                Old Password:<input
                                     type="password"
                                     placeholder={"Old Password"}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -208,17 +213,21 @@ function Account() {
                     <button className="back-button">Back</button>
                 </Link>
 
-                <button onClick={handlePassword}>
-                    {changingPassword ? "Cancel" : "Change Password"}
-                </button>
-
                 <button onClick={handleLogOut}>
                     Log Out
+                </button>
+
+                <button onClick={handlePassword}>
+                    {changingPassword ? "Cancel" : "Change Password"}
                 </button>
 
                 <button onClick={handleAddress}>
                     {changingAddress ? "Cancel" : "Change Address"}
                 </button>
+
+                {/*<button onClick={handleFriend}>*/}
+                {/*    {changingFriend ? "Cancel" : "Edit Friends"}*/}
+                {/*</button>*/}
             </div>
 
             {/* Display error message if it exists */}
