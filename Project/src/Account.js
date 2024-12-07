@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { Autocomplete } from "@react-google-maps/api";
-import { Button, Modal, Form, Container, Row, Col } from "react-bootstrap";
+import { Button, Modal, Form, Container, Row, Col, Table } from "react-bootstrap";
 
 function Account() {
     const navigate = useNavigate();
@@ -11,6 +11,9 @@ function Account() {
     const [checkPassword, setCheckPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [address, setAddress] = useState("");
+    const [friends, setFriends] = useState([]);
+    const [friendUsername, setFriendUsername] = useState("");
+    const [users, setUsers] = useState([]);
     const autocompleteRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -21,6 +24,8 @@ function Account() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         fetchProtectedData(token);
+        loadFriends();
+        fetchUsers();
     }, []);
 
     const fetchProtectedData = (token) => {
@@ -42,6 +47,39 @@ function Account() {
                     setAddress(data.address || "Not set");
                 }
             });
+    };
+
+    const fetchUsers = () => {
+        fetch('/users.json')
+            .then((response) => response.json())
+            .then((data) => setUsers(data))
+            .catch((error) => console.error('Error fetching users:', error));
+    };
+
+
+    const loadFriends = () => {
+        const storedFriends = JSON.parse(localStorage.getItem('friends')) || [];
+        setFriends(storedFriends);
+    };
+
+    const addFriend = () => {
+        const userExists = users.some(user => user.username === friendUsername);
+        if (friendUsername && userExists && !friends.includes(friendUsername)) {
+            const updatedFriends = [...friends, friendUsername];
+            setFriends(updatedFriends);
+            localStorage.setItem('friends', JSON.stringify(updatedFriends));
+            setFriendUsername("");
+        } else if (!userExists) {
+            setErrorMessage("User does not exist");
+        } else if (friends.includes(friendUsername)) {
+            setErrorMessage("User is already your friend");
+        }
+    };
+
+    const removeFriend = (friend) => {
+        const updatedFriends = friends.filter(f => f !== friend);
+        setFriends(updatedFriends);
+        localStorage.setItem('friends', JSON.stringify(updatedFriends));
     };
 
     const handlePassword = () => {
@@ -161,6 +199,47 @@ function Account() {
                         </Button>
                     </div>
                     {errorMessage && <p className="text-danger mt-3">{errorMessage}</p>}
+                </Col>
+            </Row>
+
+            <Row className="justify-content-center mt-4">
+                <Col md={8}>
+                    <h3>Friends</h3>
+                    <Table striped bordered hover>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Current Address</th>
+                                <th>Home Address</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {friends.map((friend, index) => {
+                                const friendData = users.find(user => user.username === friend);
+                                return (
+                                    <tr key={index}>
+                                        <td>{friend}</td>
+                                        <td>{friendData ? friendData.address : "Not set"}</td>
+                                        <td>{friendData ? friendData.address : "Not set"}</td>
+                                        <td>
+                                            <Button variant="danger" size="sm" onClick={() => removeFriend(friend)}>Remove</Button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </Table>
+                    <Form.Group>
+                        <Form.Label>Add Friend</Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={friendUsername}
+                            onChange={(e) => setFriendUsername(e.target.value)}
+                            placeholder="Enter friend's username"
+                        />
+                        <Button variant="primary" onClick={addFriend} className="mt-2">Add Friend</Button>
+                    </Form.Group>
                 </Col>
             </Row>
 
