@@ -99,3 +99,10 @@
   font-size: 1.75rem; /* Adjust size as needed */
   font-weight: bold;  /* Make it bold */
 }
+
+.pac-container {
+  position: absolute !important;
+  z-index: 1060 !important; /* Ensures it's above the modal */
+  display: block !important;
+}
+

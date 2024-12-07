@@ -24,16 +24,32 @@ const MainPage = () => {
     const [username, setUsername] = useState('');
     const [home, setHome] = useState("");
     const [userLocation, setUserLocation] = useState(null);
+    const [useHome, setUseHome] = useState(false);
+    const [useCurrent, setUseCurrent] = useState(false)
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        fetchProtectedData(token)
+        useEffect(() => {
+            const token = localStorage.getItem('token');
+            fetchProtectedData(token);
 
         getUserLocation(
             (position) => {
                 const { latitude, longitude } = position.coords;
-                setUserLocation({ lat: latitude, lng: longitude });
-                console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+                const geocoder = new window.google.maps.Geocoder();
+                const location = { lat: latitude, lng: longitude };
+
+                geocoder.geocode({ location }, (results, status) => {
+                    if (status === "OK" && results[0]) {
+                        const place = {
+                            formatted_address: results[0].formatted_address,
+                            geometry: {
+                                location: new window.google.maps.LatLng(latitude, longitude),
+                            },
+                        };
+                        setUserLocation(place); // Save Place object
+                    } else {
+                        console.error("Geocode failed:", status);
+                    }
+                });
             },
             (error) => {
                 showError(error);
@@ -41,7 +57,7 @@ const MainPage = () => {
                 setUserLocation(null);
             }
         );
-    }, [])
+    }, []);
 
     const fetchProtectedData = (token) => {
         fetch('http://localhost:5000/get-account', {
@@ -163,6 +179,13 @@ const MainPage = () => {
                 console.error("Geocode not successful: ", status)
             }
         })
+
+        setUseHome(true)
+    }
+
+    const handleCurrentAddress = () => {
+        handlePlaceSelect(userLocation)
+        setUseCurrent(true)
     }
 
     // Callback to be triggered when the map loads to ensure markers are added only after map is ready
@@ -230,31 +253,67 @@ const MainPage = () => {
                         ))}
                     </ul>
 
-                    {home && (
+                    {home && !useHome && (
                         <Button variant={"secondary"} onClick={handleHomeAddress} className="w-100 mb-3">
                             Use Home Address
                         </Button>
                     )}
+
+                    {!useCurrent && (
+                        <Button variant={"secondary"} onClick={handleCurrentAddress} className="w-100 mb-3">
+                            Use Current Address
+                        </Button>
+                    )}
+
+                    <h5>Filter by:</h5>
+                    <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+                            Dining Halls
+                        </label>
+                    </div>
+                    <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+                            Restaurants
+                        </label>
+                    </div>
+                    <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+                            Gyms
+                        </label>
+                    </div>
+                    <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+                            Libraries
+                        </label>
+                    </div>
+                    <div className="form-check form-switch">
+                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckDefault"/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+                            Dorms
+                        </label>
+                    </div>
                 </div>
 
                 <div className={"map-container"}>
-                    <GoogleMap mapContainerClassName="map" mapContainerStyle={{ width: "100%", height: "100%"}} zoom={15} center={center} onLoad={handleMapLoad}>
+                    <GoogleMap mapContainerClassName="map" mapContainerStyle={{width: "100%", height: "100%"}} zoom={15}
+                               center={center} onLoad={handleMapLoad}>
                         {markers.map((marker, index) => (
                             <Marker key={index} position={marker.position} label={marker.label}/>
                         ))}
-                        {userLocation && (
-                            <Marker position={userLocation} label="You" />
-                        )}
                     </GoogleMap>
                 </div>
             </div>
         </>
     );
-}
+    }
 ;
 
 const App = () => (
-    <LoadScript googleMapsApiKey="api_key" libraries={["places"]}>
+    <LoadScript googleMapsApiKey="aoi_key" libraries={["places"]}>
         <Router>
             <Routes>
                 <Route path="/" element={<MainPage/>}/>

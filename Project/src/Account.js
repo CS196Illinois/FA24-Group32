@@ -13,6 +13,7 @@ function Account() {
     const [address, setAddress] = useState("");
     const autocompleteRef = useRef(null);
     const inputRef = useRef(null);
+
     const [changingPassword, setChangingPassword] = useState(false);
     const [changingAddress, setChangingAddress] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -43,8 +44,7 @@ function Account() {
             });
     };
 
-    const handlePassword = (e) => {
-        e.preventDefault();
+    const handlePassword = () => {
         setChangingAddress(false);
         setChangingPassword(!changingPassword);
     };
@@ -57,7 +57,7 @@ function Account() {
                 const response = await fetch('http://localhost:5000/set-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, newPassword })
+                    body: JSON.stringify({ username, password, newPassword }),
                 });
 
                 if (response.ok) {
@@ -75,14 +75,12 @@ function Account() {
         }
     };
 
-    const handleLogOut = (e) => {
-        e.preventDefault();
+    const handleLogOut = () => {
         localStorage.removeItem('token');
         navigate('/');
     };
 
-    const handleAddress = (e) => {
-        e.preventDefault();
+    const handleAddress = () => {
         setChangingPassword(false);
         setChangingAddress(!changingAddress);
     };
@@ -92,7 +90,7 @@ function Account() {
             const response = await fetch('http://localhost:5000/set-address', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, address: newAddress })
+                body: JSON.stringify({ username, address: newAddress }),
             });
 
             if (response.ok) {
@@ -113,6 +111,30 @@ function Account() {
             await submitAddress(newAddress);
         }
     };
+
+    const repositionAutocomplete = () => {
+        const pacContainer = document.querySelector('.pac-container');
+        const inputBox = inputRef.current.getBoundingClientRect();
+
+        if (pacContainer) {
+            pacContainer.style.position = 'absolute';
+            pacContainer.style.top = `${inputBox.bottom + window.scrollY}px`;
+            pacContainer.style.left = `${inputBox.left + window.scrollX}px`;
+            pacContainer.style.width = `${inputBox.width}px`;
+            pacContainer.style.zIndex = '1060'; // Bootstrap's modal z-index
+        }
+    };
+
+
+    useEffect(() => {
+        if (changingAddress) {
+            window.addEventListener('resize', repositionAutocomplete);
+            repositionAutocomplete();
+        }
+        return () => {
+            window.removeEventListener('resize', repositionAutocomplete);
+        };
+    }, [changingAddress]);
 
     const clearAddress = async () => {
         setAddress("");
@@ -191,7 +213,10 @@ function Account() {
                         <Form.Group className="mb-3">
                             <Form.Label>New Address</Form.Label>
                             <Autocomplete
-                                onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+                                onLoad={(autocomplete) => {
+                                    autocompleteRef.current = autocomplete;
+                                    repositionAutocomplete();
+                                }}
                                 onPlaceChanged={handlePlaceSelect}
                             >
                                 <Form.Control
