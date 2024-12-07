@@ -8,5 +8,15 @@
     "username": "test1",
     "password": "test1",
     "address": ""
+  },
+  {
+    "username": "test2",
+    "password": "test2",
+    "address": "201 E Peabody Dr, Champaign, IL 61820, USA"
+  },
+  {
+    "username": "test3",
+    "password": "test3",
+    "address": ""
   }
 ]

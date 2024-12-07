@@ -7,6 +7,7 @@ import Account from "./Account";
 import { GoogleMap, Marker, LoadScript, Autocomplete } from "@react-google-maps/api";
 import "bootstrap/dist/css/bootstrap.min.css";
 import './App.css'
+import data from "bootstrap/js/src/dom/data";
 
 const center = {
     lat: 40.110588,  // UIUC latitude
@@ -20,6 +21,7 @@ const MainPage = () => {
     const inputRef = useRef(null);
     const [loggedIn, setLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
+    const [home, setHome] = useState("");
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -41,11 +43,12 @@ const MainPage = () => {
             })
             .then((data) => {
                 setUsername(data.username);
+                setHome(data.address)
             })
     }
 
-    const handlePlaceSelect = () => {
-        const place = autocompleteRef.current.getPlace();
+    const handlePlaceSelect = (place) => {
+        //const place = autocompleteRef.current.getPlace();
         if (place && place.geometry) {
             const newAddress = place.formatted_address;
             const location = place.geometry.location;
@@ -129,47 +132,28 @@ const MainPage = () => {
             .catch((err) => console.error("Error loading places.json", err));
     };
 
+    const handleHomeAddress = () => {
+        const geocoder = new window.google.maps.Geocoder();
+
+        geocoder.geocode({ address: home }, (results, status) => {
+            if (status === "OK" && results[0]) {
+                const place = {
+                    formatted_address: results[0].formatted_address,
+                    geometry: {
+                        location: results[0].geometry.location,
+                    }
+                }
+                handlePlaceSelect(place)
+            } else {
+                console.error("Geocode not successful: ", status)
+            }
+        })
+    }
+
     // Callback to be triggered when the map loads to ensure markers are added only after map is ready
     const handleMapLoad = () => {
         fetchPlacesAndAddMarkers();
     };
-
-//     return (
-//         <div className="app-container">
-//             <div className="sidebar">
-//                 <h2>Enter Address</h2>
-//
-//                 <Autocomplete
-//                     onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-//                     onPlaceChanged={handlePlaceSelect}
-//                 >
-//                     <input
-//                         ref={inputRef}
-//                         type="text"
-//                         placeholder="Start typing an address..."
-//                         style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-//                     />
-//                 </Autocomplete>
-//
-//                 <button onClick={handleAddressSubmit}>Save Addresses</button>
-//
-//                 <ul>
-//                     {addresses.map((address, index) => (
-//                         <li key={index}>{address}</li>
-//                     ))}
-//                 </ul>
-//             </div>
-//
-//             <div className="map-container">
-//                 <GoogleMap mapContainerClassName="map" zoom={15} center={center} onLoad={handleMapLoad}>
-//                     {markers.map((marker, index) => (
-//                         <Marker key={index} position={marker.position} label={marker.label} />
-//                     ))}
-//                 </GoogleMap>
-//             </div>
-//         </div>
-//     );
-// };
 
     return (
         <>
@@ -211,7 +195,7 @@ const MainPage = () => {
 
                     <Autocomplete
                         onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-                        onPlaceChanged={handlePlaceSelect}
+                        onPlaceChanged={() => handlePlaceSelect(autocompleteRef.current.getPlace())}
                     >
                         <input
                             ref={inputRef}
@@ -230,6 +214,12 @@ const MainPage = () => {
                             <li key={index}>{address}</li>
                         ))}
                     </ul>
+
+                    {home && (
+                        <Button variant={"secondary"} onClick={handleHomeAddress} className="w-100 mb-3">
+                            Use Home Address
+                        </Button>
+                    )}
                 </div>
 
                 <div className={"map-container"}>
