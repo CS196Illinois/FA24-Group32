@@ -40,10 +40,6 @@ class User {
         this.username = username;
         this.password = password;
         this.address = address;
-        // this.friends = friends;
-        // this.outRequests = outRequests;
-        // this.inRequests = inRequests;
-        // this.approvedRequests = approvedRequests;
     }
 }
 
