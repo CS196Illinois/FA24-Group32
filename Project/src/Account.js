@@ -195,17 +195,6 @@ function Account() {
                 </Container>
             </Navbar>
             <>
-            <Navbar bg={"light"} expand={"lg"}>
-                <Container fluid>
-                    <Navbar.Brand href={"/"} style={{
-                        fontSize: "2rem",
-                        color: "#482980",
-                        fontWeight: "bold"
-                    }}>
-                        SpotFinder
-                    </Navbar.Brand>
-                </Container>
-            </Navbar>
             <Container>
                     <Row className="justify-content-center mt-4">
                         <Col md={6} className="text-center">
@@ -306,73 +295,6 @@ function Account() {
                         </Form>
                     </Modal.Body>
                 </Modal>
-                {/* Password Modal */}
-                <Modal show={changingPassword} onHide={() => setChangingPassword(false)} centered>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Change Password</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form onSubmit={submitPassword}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Old Password</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="Old Password"
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Label>New Password</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="New Password"
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    required
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Confirm New Password</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="Confirm Password"
-                                    onChange={(e) => setCheckPassword(e.target.value)}
-                                    required
-                                />
-                            </Form.Group>
-                            <Button variant="primary" type="submit">Submit</Button>
-                        </Form>
-                    </Modal.Body>
-                </Modal>
-
-                {/* Address Modal */}
-                <Modal show={changingAddress} onHide={() => setChangingAddress(false)} centered>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Change Address</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group className="mb-3">
-                                <Form.Label>New Address</Form.Label>
-                                <Autocomplete
-                                    onLoad={(autocomplete) => {
-                                        autocompleteRef.current = autocomplete;
-                                        repositionAutocomplete();
-                                    }}
-                                    onPlaceChanged={handlePlaceSelect}
-                                >
-                                    <Form.Control
-                                        ref={inputRef}
-                                        type="text"
-                                        placeholder="Start typing an address..."
-                                    />
-                                </Autocomplete>
-                            </Form.Group>
-                            <Button variant="secondary" onClick={clearAddress} className="me-2">Clear Address</Button>
-                            <Button variant="primary" onClick={() => setChangingAddress(false)}>Close</Button>
-                        </Form>
-                    </Modal.Body>
-                </Modal>
             </Container>
         </>
                 {/* Address Modal */}
@@ -403,7 +325,6 @@ function Account() {
                         </Form>
                     </Modal.Body>
                 </Modal>
-            </Container>
         </>
     );
 }
