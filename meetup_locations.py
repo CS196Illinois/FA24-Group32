@@ -5,10 +5,10 @@ import config
 import json
 
 MEETUP_SPOTS = [
-    {"name": "Ikenberry Dining Center (IKE)", "address": "301 E. Gregory Drive, Champaign"},
     {"name": "Illinois Street Dining Center (ISR)", "address": "1010 W. Illinois, Urbana"},
-    {"name": "Lincoln Avenue Dining Hall (LAR)", "address": "1005 S. Lincoln, Urbana"},
-    {"name": "Pennsylvania Avenue Dining Hall (PAR)", "address": "906 W. College Ct., Urbana"},
+    {"name": "Grainger Engineering Library", "address": "1301 W. Springfield Ave., Urbana"},
+    {"name": "Activities and Recreation Center (ARC)", "address": "201 E. Peabody Dr., Champaign"},
+    {"name": "Allen Hall", "address": "1005 W. Gregory Dr., Urbana"},
 ]
 
 # Initialize Google Maps client
