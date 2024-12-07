@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import {Container, Row, Col, Form, Button, Navbar} from "react-bootstrap";
 
 const SignUp = () => {
     const [username, setUsername] = useState("");
@@ -33,40 +33,53 @@ const SignUp = () => {
     };
 
     return (
-        <Container className="d-flex vh-100">
-            <Row className="align-items-center justify-content-center w-100">
-                <Col md={6} lg={4}>
-                    <h2 className="text-center">Sign Up</h2>
-                    <Form onSubmit={handleSignup}>
-                        <Form.Group>
-                            <Form.Label>Username</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter username"
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Label style={{ marginTop: "10px" }}>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="Enter password"
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
-                        <Button type="submit" variant="primary" block style={{ marginTop: "10px" }}>
-                            Sign Up
-                        </Button>
-                    </Form>
-                    <Link to="/" className="btn btn-link">
-                        Back
-                    </Link>
-                    {errorMessage && <p className="text-danger mt-2">{errorMessage}</p>}
-                </Col>
-            </Row>
-        </Container>
+        <>
+            <Navbar bg={"light"} expand={"lg"}>
+                <Container fluid>
+                    <Navbar.Brand href={"/"}  style={{
+                        fontSize: "2rem",
+                        color: "#482980",
+                        fontWeight: "bold"
+                    }}>
+                        SpotFinder
+                    </Navbar.Brand>
+                </Container>
+            </Navbar>
+            <Container className="d-flex vh-100">
+                <Row className="align-items-center justify-content-center w-100">
+                    <Col md={6} lg={4}>
+                        <h2 className="text-center">Sign Up</h2>
+                        <Form onSubmit={handleSignup}>
+                            <Form.Group>
+                                <Form.Label>Username</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter username"
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label style={{ marginTop: "10px" }}>Password</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Enter password"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
+                            <Button type="submit" variant="primary" block style={{ marginTop: "10px" }}>
+                                Sign Up
+                            </Button>
+                        </Form>
+                        <Link to="/" className="btn btn-link">
+                            Back
+                        </Link>
+                        {errorMessage && <p className="text-danger mt-2">{errorMessage}</p>}
+                    </Col>
+                </Row>
+            </Container>
+        </>
     );
 };
 

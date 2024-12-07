@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { Autocomplete } from "@react-google-maps/api";
-import { Button, Modal, Form, Container, Row, Col } from "react-bootstrap";
+import {Button, Modal, Form, Container, Row, Col, Nav, Navbar} from "react-bootstrap";
+import './App.css'
 
 function Account() {
     const navigate = useNavigate();
@@ -143,95 +144,108 @@ function Account() {
     };
 
     return (
-        <Container>
-            <Row className="justify-content-center mt-4">
-                <Col md={6} className="text-center">
-                    <h2>Username: {username}</h2>
-                    <h2>Home Address: {address}</h2>
-                    <div className="mt-4">
-                        <Link to="/" className="me-2">
-                            <Button variant="secondary">Back</Button>
-                        </Link>
-                        <Button variant="danger" onClick={handleLogOut} className="me-2">Log Out</Button>
-                        <Button variant="primary" onClick={handlePassword} className="me-2">
-                            {changingPassword ? "Cancel" : "Change Password"}
-                        </Button>
-                        <Button variant="info" onClick={handleAddress}>
-                            {changingAddress ? "Cancel" : "Change Address"}
-                        </Button>
-                    </div>
-                    {errorMessage && <p className="text-danger mt-3">{errorMessage}</p>}
-                </Col>
-            </Row>
+        <>
+            <Navbar bg={"light"} expand={"lg"}>
+                <Container fluid>
+                    <Navbar.Brand href={"/"} style={{
+                        fontSize: "2rem",
+                        color: "#482980",
+                        fontWeight: "bold"
+                    }}>
+                        SpotFinder
+                    </Navbar.Brand>
+                </Container>
+            </Navbar>
+            <Container>
+                <Row className="justify-content-center mt-4">
+                    <Col md={6} className="text-center">
+                        <h2>Username: {username}</h2>
+                        <h2>Home Address: {address}</h2>
+                        <div className="mt-4">
+                            <Link to="/" className="me-2">
+                                <Button variant="secondary">Back</Button>
+                            </Link>
+                            <Button variant="danger" onClick={handleLogOut} className="me-2">Log Out</Button>
+                            <Button variant="primary" onClick={handlePassword} className="me-2">
+                                {changingPassword ? "Cancel" : "Change Password"}
+                            </Button>
+                            <Button variant="info" onClick={handleAddress}>
+                                {changingAddress ? "Cancel" : "Change Address"}
+                            </Button>
+                        </div>
+                        {errorMessage && <p className="text-danger mt-3">{errorMessage}</p>}
+                    </Col>
+                </Row>
 
-            {/* Password Modal */}
-            <Modal show={changingPassword} onHide={() => setChangingPassword(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Change Password</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={submitPassword}>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Old Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="Old Password"
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>New Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="New Password"
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Confirm New Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="Confirm Password"
-                                onChange={(e) => setCheckPassword(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
-                        <Button variant="primary" type="submit">Submit</Button>
-                    </Form>
-                </Modal.Body>
-            </Modal>
-
-            {/* Address Modal */}
-            <Modal show={changingAddress} onHide={() => setChangingAddress(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Change Address</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>New Address</Form.Label>
-                            <Autocomplete
-                                onLoad={(autocomplete) => {
-                                    autocompleteRef.current = autocomplete;
-                                    repositionAutocomplete();
-                                }}
-                                onPlaceChanged={handlePlaceSelect}
-                            >
+                {/* Password Modal */}
+                <Modal show={changingPassword} onHide={() => setChangingPassword(false)} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Change Password</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form onSubmit={submitPassword}>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Old Password</Form.Label>
                                 <Form.Control
-                                    ref={inputRef}
-                                    type="text"
-                                    placeholder="Start typing an address..."
+                                    type="password"
+                                    placeholder="Old Password"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
                                 />
-                            </Autocomplete>
-                        </Form.Group>
-                        <Button variant="secondary" onClick={clearAddress} className="me-2">Clear Address</Button>
-                        <Button variant="primary" onClick={() => setChangingAddress(false)}>Close</Button>
-                    </Form>
-                </Modal.Body>
-            </Modal>
-        </Container>
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label>New Password</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="New Password"
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Confirm New Password</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Confirm Password"
+                                    onChange={(e) => setCheckPassword(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
+                            <Button variant="primary" type="submit">Submit</Button>
+                        </Form>
+                    </Modal.Body>
+                </Modal>
+
+                {/* Address Modal */}
+                <Modal show={changingAddress} onHide={() => setChangingAddress(false)} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Change Address</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group className="mb-3">
+                                <Form.Label>New Address</Form.Label>
+                                <Autocomplete
+                                    onLoad={(autocomplete) => {
+                                        autocompleteRef.current = autocomplete;
+                                        repositionAutocomplete();
+                                    }}
+                                    onPlaceChanged={handlePlaceSelect}
+                                >
+                                    <Form.Control
+                                        ref={inputRef}
+                                        type="text"
+                                        placeholder="Start typing an address..."
+                                    />
+                                </Autocomplete>
+                            </Form.Group>
+                            <Button variant="secondary" onClick={clearAddress} className="me-2">Clear Address</Button>
+                            <Button variant="primary" onClick={() => setChangingAddress(false)}>Close</Button>
+                        </Form>
+                    </Modal.Body>
+                </Modal>
+            </Container>
+        </>
     );
 }
 
