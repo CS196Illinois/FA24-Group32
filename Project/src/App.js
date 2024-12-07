@@ -8,6 +8,7 @@ import { GoogleMap, Marker, LoadScript, Autocomplete } from "@react-google-maps/
 import "bootstrap/dist/css/bootstrap.min.css";
 import './App.css'
 import data from "bootstrap/js/src/dom/data";
+import { getUserLocation, showError } from './locationUtils';
 
 const center = {
     lat: 40.110588,  // UIUC latitude
@@ -22,10 +23,24 @@ const MainPage = () => {
     const [loggedIn, setLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
     const [home, setHome] = useState("");
+    const [userLocation, setUserLocation] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         fetchProtectedData(token)
+
+        getUserLocation(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setUserLocation({ lat: latitude, lng: longitude });
+                console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+            },
+            (error) => {
+                showError(error);
+                console.error('Error getting location:', error);
+                setUserLocation(null);
+            }
+        );
     }, [])
 
     const fetchProtectedData = (token) => {
@@ -227,6 +242,9 @@ const MainPage = () => {
                         {markers.map((marker, index) => (
                             <Marker key={index} position={marker.position} label={marker.label}/>
                         ))}
+                        {userLocation && (
+                            <Marker position={userLocation} label="You" />
+                        )}
                     </GoogleMap>
                 </div>
             </div>
