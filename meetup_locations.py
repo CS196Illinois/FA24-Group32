@@ -8,7 +8,8 @@ MEETUP_SPOTS = [
     {"name": "Illinois Street Dining Center (ISR)", "address": "1010 W. Illinois, Urbana"},
     {"name": "Grainger Engineering Library", "address": "1301 W. Springfield Ave., Urbana"},
     {"name": "Activities and Recreation Center (ARC)", "address": "201 E. Peabody Dr., Champaign"},
-    {"name": "Allen Hall", "address": "1005 W. Gregory Dr., Urbana"},
+    {"name": "Nugent Hall", "address": "207 E Gregory Dr., Champaign"},
+    {"name": "Fat Sandwich Company", "address": "502 E. John St., Champaign"}, 
 ]
 
 # Initialize Google Maps client
